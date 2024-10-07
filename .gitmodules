@@ -7,3 +7,6 @@
 [submodule "lib/halmos-cheatcodes"]
 	path = lib/halmos-cheatcodes
 	url = https://github.com/a16z/halmos-cheatcodes
+[submodule "lib/foundry-devops"]
+	path = lib/foundry-devops
+	url = https://github.com/ChainAccelOrg/foundry-devops

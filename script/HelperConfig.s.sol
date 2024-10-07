@@ -34,12 +34,12 @@ contract HelperConfig is Script {
             return activeNetworkConfig;
         }
 
-        vm.startBroadcast();
+        // vm.startBroadcast();
         MockV3Aggregator mockPriceFeed = new MockV3Aggregator(
             DECIMALS,
             INITAL_PRICE
         );
-        vm.stopBroadcast();
+        // vm.stopBroadcast();
 
         NetworkConfig memory anvilConifg = NetworkConfig({
             priceFeed: address(mockPriceFeed)

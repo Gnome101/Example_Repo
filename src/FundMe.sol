@@ -4,10 +4,12 @@ pragma solidity ^0.8.18;
 // Note: The AggregatorV3Interface might be at a different location than what was in the video!
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
+import {Test, console} from "forge-std/Test.sol";
 
-error FundMe__NotOwner();
 
 contract FundMe {
+    error FundMe__NotOwner();
+
     using PriceConverter for uint256;
 
     mapping(address => uint256) private addressToAmountFunded;
@@ -24,6 +26,7 @@ contract FundMe {
     }
 
     function fund() public payable {
+        // console.log("Sender:", msg.sender, "\nValue:", msg.value);
         require(msg.value.getConversionRate(pf) >= MINIMUM_USD, "You need to spend more ETH!");
         // require(PriceConverter.getConversionRate(msg.value) >= MINIMUM_USD, "You need to spend more ETH!");
         addressToAmountFunded[msg.sender] += msg.value;
@@ -40,8 +43,22 @@ contract FundMe {
         if (msg.sender != i_owner) revert FundMe__NotOwner();
         _;
     }
+    function cheaperWithdraw() public  onlyOwner{
+        uint256 fundersLength = funders.length;
+        for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+        funders = new address[](0);
+
+         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed");
+    }
+   
 
     function withdraw() public onlyOwner {
+        // console.log(i_owner, msg.sender);
+
         for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
             address funder = funders[funderIndex];
             addressToAmountFunded[funder] = 0;
@@ -58,6 +75,7 @@ contract FundMe {
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call failed");
     }
+
     // Explainer from: https://solidity-by-example.org/fallback/
     // Ether is sent to contract
     //      is msg.data empty?
@@ -88,6 +106,13 @@ contract FundMe {
    function getFunder(uint256 index) external view returns(address) {
     return funders[index];
    }
+   function getFunderLength() external view returns(uint256) {
+    return funders.length;
+   }
+    function getOwner() external view returns(address) {
+    return i_owner;
+   }
+
 }
 
 // Concepts we didn't cover yet (will cover in later sections)
